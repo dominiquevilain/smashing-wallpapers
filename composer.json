@@ -1,0 +1,9 @@
+{
+  "require": {
+    "guzzlehttp/guzzle": "*",
+    "nesbot/carbon": "^2.63",
+    "php": "^8.1",
+    "ext-dom": "*",
+    "php-webdriver/webdriver": "^1.13"
+  }
+}
