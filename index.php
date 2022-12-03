@@ -9,6 +9,7 @@ use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 
+const PATH_TO_DOWNLOAD_FILES = '/Users/dominique/Downloads/sm/';
 require_once('vendor/autoload.php');
 
 const BASE_URI = 'https://www.smashingmagazine.com';
@@ -96,9 +97,8 @@ if (file_exists('links.json')) {
 file_put_contents('links.json', json_encode($months_links));
 
 // Prepare a folder before downloading the images
-$path_to_download_files = '/Users/dominique/Downloads/sm/';
-if (!file_exists($path_to_download_files) && !mkdir($path_to_download_files) && !is_dir($path_to_download_files)) {
-    throw new \RuntimeException(sprintf('Directory "%s" was not created', $path_to_download_files));
+if (!file_exists(PATH_TO_DOWNLOAD_FILES) && !mkdir(PATH_TO_DOWNLOAD_FILES) && !is_dir(PATH_TO_DOWNLOAD_FILES)) {
+    throw new \RuntimeException(sprintf('Directory "%s" was not created', PATH_TO_DOWNLOAD_FILES));
 }
 
 foreach ($months_links as $month_link) {
@@ -141,7 +141,7 @@ function grabImageFromLink(string $image_link): void
     $filename = $filenameParts[count($filenameParts) - 1];
 
     try {
-        $client->get($image_link, ['sink' => '/Users/dominique/Downloads/sm/'.$filename]);
+        $client->get($image_link, ['sink' => PATH_TO_DOWNLOAD_FILES.$filename]);
     } catch (ClientException $guzzle_exception) {
         var_dump($guzzle_exception->getMessage());
         die();
