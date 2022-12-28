@@ -1,5 +1,7 @@
 <?php
 
+require_once('vendor/autoload.php');
+
 namespace Facebook\WebDriver;
 
 use Carbon\Carbon;
@@ -10,7 +12,6 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 
 const PATH_TO_DOWNLOAD_FILES = '/Users/dominique/Downloads/sm/';
-require_once('vendor/autoload.php');
 
 const BASE_URI = 'https://www.smashingmagazine.com';
 const IMAGE_LINK_PATTERN =
