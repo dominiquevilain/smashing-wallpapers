@@ -1,8 +1,9 @@
 <?php
 
+namespace Facebook\WebDriver;
+
 require_once('vendor/autoload.php');
 
-namespace Facebook\WebDriver;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -72,7 +73,7 @@ $months_links = [];
 
 /** Let’s iterate through time **/
 for ($y = $year; $y > 2009; $y--) {
-    $driver->get('https://www.smashingmagazine.com/search/?q=wallpaper%20'.$y);
+    $driver->get('https://www.smashingmagazine.com/search/?q=wallpaper%20' . $y);
     $driver->wait(2000)->until(
         WebDriverExpectedCondition::visibilityOfAnyElementLocated(
             WebDriverBy::cssSelector('h2.article--post__title')
@@ -142,7 +143,7 @@ function grabImageFromLink(string $image_link): void
     $filename = $filenameParts[count($filenameParts) - 1];
 
     try {
-        $client->get($image_link, ['sink' => PATH_TO_DOWNLOAD_FILES.$filename]);
+        $client->get($image_link, ['sink' => PATH_TO_DOWNLOAD_FILES . $filename]);
     } catch (ClientException $guzzle_exception) {
         var_dump($guzzle_exception->getMessage());
         die();
@@ -156,5 +157,3 @@ function removeBaseUriFromImageLink(string $image_link): string
     }
     return $image_link;
 }
-
-
