@@ -6,6 +6,7 @@ require_once('vendor/autoload.php');
 
 
 use Carbon\Carbon;
+use Dotenv\Dotenv;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
@@ -13,13 +14,19 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 
 const PATH_TO_DOWNLOAD_FILES = '/Users/dominique/Downloads/sm/';
-
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+const OLDEST_YEAR = 2009;
 const BASE_URI = 'https://www.smashingmagazine.com';
 const IMAGE_LINK_PATTERN =
 '`https:\/\/(www\.)?smashingmagazine\.com\/files\/wallpapers\/([a-z\-_\d\/])+-nocal-(1920x1080|2560x1440|3840x2160)\.(jpeg|jpg|png)`i';
-
+const SEARCH_STRING = 'https://www.smashingmagazine.com/search/?q=wallpaper%20';
+const ARCHIVE_FILE_PATH = 'links.txt';
 $client = new Client(['base_uri' => BASE_URI]);
-
+$archive_links = [];
+if (file_exists(ARCHIVE_FILE_PATH)) {
+    $archive_links = file(ARCHIVE_FILE_PATH, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+}
 
 /**
  * This script scraps the wallpapers from Smashing Magazine 😍
@@ -54,7 +61,7 @@ $client = new Client(['base_uri' => BASE_URI]);
  * Don't forget to install and start GeckoDriver or ChromeDriver !
  * Since I use Firefox, it’s GeckoDriver for me.
 */
-$host = 'http://localhost:4444';
+$host = $_ENV['DRIVER_HOST'];
 $firefoxOptions = new FirefoxOptions();
 // Let’s go headless to improve the performances a bit…
 $firefoxOptions->addArguments(['-headless']);
@@ -72,9 +79,10 @@ $year = Carbon::now()->year;
 $months_links = [];
 
 /** Let’s iterate through time **/
-for ($y = $year; $y > 2009; $y--) {
-    $driver->get('https://www.smashingmagazine.com/search/?q=wallpaper%20' . $y);
-    $driver->wait(2000)->until(
+for ($y = $year; $y > OLDEST_YEAR; $y--) {
+    echo "Requesting year {$y}";
+    $driver->get(SEARCH_STRING . $y);
+    $driver->wait(4000)->until(
         WebDriverExpectedCondition::visibilityOfAnyElementLocated(
             WebDriverBy::cssSelector('h2.article--post__title')
         )
@@ -84,20 +92,22 @@ for ($y = $year; $y > 2009; $y--) {
     );
     foreach ($current_year_archive_links as $month_link) {
         $href = $month_link->getAttribute('href');
-        if (!in_array($href, $months_links)) {
+        if (!in_array($href, $months_links) && !in_array($href, $archive_links)) {
+            echo ".";
             $months_links[] = $href;
         }
     }
+    echo "\n";
 }
+$links = array_merge($months_links, $archive_links);
 // terminate the session
 $driver->quit();
+$count_months = count($links);
+echo "Finished requesting the website. Found {$count_months} month links" . PHP_EOL;
 
 // Let’s persist those links, it might prove useful in some time…
-if (file_exists('links.json')) {
-    unlink('links.json');
-}
-file_put_contents('links.json', json_encode($months_links));
-
+file_put_contents(ARCHIVE_FILE_PATH, sort(array_map(fn ($link) => $link . PHP_EOL, $links), SORT_NATURAL));
+die();
 // Prepare a folder before downloading the images
 if (!file_exists(PATH_TO_DOWNLOAD_FILES) && !mkdir(PATH_TO_DOWNLOAD_FILES) && !is_dir(PATH_TO_DOWNLOAD_FILES)) {
     throw new \RuntimeException(sprintf('Directory "%s" was not created', PATH_TO_DOWNLOAD_FILES));
