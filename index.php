@@ -99,24 +99,23 @@ for ($y = $year; $y > OLDEST_YEAR; $y--) {
     }
     echo "\n";
 }
-$links = array_map(fn ($link) => $link . PHP_EOL, array_merge($months_links, $archive_links));
 // terminate the session
 $driver->quit();
+
+$links = array_map(fn ($link) => $link . PHP_EOL, array_merge($months_links, $archive_links));
+sort($links, SORT_NATURAL);
 $count_months = count($links);
 echo "Finished requesting the website. Found {$count_months} month links" . PHP_EOL;
 
 // Let’s persist those links, it might prove useful in some time…
-
-file_put_contents(ARCHIVE_FILE_PATH, sort($links, SORT_NATURAL));
-die();
+file_put_contents(ARCHIVE_FILE_PATH, $links);
 // Prepare a folder before downloading the images
 if (!file_exists(PATH_TO_DOWNLOAD_FILES) && !mkdir(PATH_TO_DOWNLOAD_FILES) && !is_dir(PATH_TO_DOWNLOAD_FILES)) {
     throw new \RuntimeException(sprintf('Directory "%s" was not created', PATH_TO_DOWNLOAD_FILES));
 }
 
-foreach ($months_links as $month_link) {
-    //var_dump($month_link);
-    scrap($month_link);
+foreach ($links as $month_link) {
+    scrap(trim($month_link));
 }
 
 function scrap(string $url): void
