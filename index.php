@@ -99,14 +99,15 @@ for ($y = $year; $y > OLDEST_YEAR; $y--) {
     }
     echo "\n";
 }
-$links = array_merge($months_links, $archive_links);
+$links = array_map(fn ($link) => $link . PHP_EOL, array_merge($months_links, $archive_links));
 // terminate the session
 $driver->quit();
 $count_months = count($links);
 echo "Finished requesting the website. Found {$count_months} month links" . PHP_EOL;
 
 // Let’s persist those links, it might prove useful in some time…
-file_put_contents(ARCHIVE_FILE_PATH, sort(array_map(fn ($link) => $link . PHP_EOL, $links), SORT_NATURAL));
+
+file_put_contents(ARCHIVE_FILE_PATH, sort($links, SORT_NATURAL));
 die();
 // Prepare a folder before downloading the images
 if (!file_exists(PATH_TO_DOWNLOAD_FILES) && !mkdir(PATH_TO_DOWNLOAD_FILES) && !is_dir(PATH_TO_DOWNLOAD_FILES)) {
